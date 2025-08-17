@@ -8,7 +8,6 @@
         "fmap",
         "geocoder",
         "geopy",
-        "geospatial",
         "Guindy",
         "Krishnagiri",
         "latlon",
@@ -23,8 +22,7 @@
         "Tambaram",
         "udcdd",
         "udce",
-        "Vadapalani",
-        "venv"
+        "Vadapalani"
     ],
     "python.analysis.autoImportCompletions": false
 }
