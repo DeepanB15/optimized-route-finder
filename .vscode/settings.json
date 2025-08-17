@@ -1,0 +1,28 @@
+{
+    "cSpell.words": [
+        "addrs",
+        "Bengaluru",
+        "Chengalpattu",
+        "dlat",
+        "dlon",
+        "fmap",
+        "geocoder",
+        "geopy",
+        "Guindy",
+        "Krishnagiri",
+        "latlon",
+        "matplotlib",
+        "Nagar",
+        "networkx",
+        "numpy",
+        "openrouteservice",
+        "scikit",
+        "selectbox",
+        "streamlit",
+        "Tambaram",
+        "udcdd",
+        "udce",
+        "Vadapalani"
+    ],
+    "python.analysis.autoImportCompletions": false
+}
