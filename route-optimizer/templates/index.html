@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartRoute - Route Optimizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #f5f5f5;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 343px;
+            background: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d3748;
+            font-size: 20px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .form-section {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #a0aec0;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(66, 153, 225, 0.5);
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+        
+        .file-upload-box {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-box:hover {
+            border-color: rgba(66, 153, 225, 0.5);
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            cursor: pointer;
+        }
+        
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(79, 209, 197, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .file-icon i {
+            color: #4FD1C5;
+            font-size: 24px;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .file-subtitle {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        
+        .optimize-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4299e1;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            margin-top: 24px;
+        }
+        
+        .optimize-btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+        
+        .optimize-btn:disabled {
+            background: #4a5568;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .footer {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        
+        .footer-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4299e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background: #f7fafc;
+            overflow-y: auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            background: #f7fafc;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        
+        .icon-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            padding: 24px 32px;
+            height: calc(100vh - 80px);
+        }
+        
+        /* Map Container */
+        .map-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .map-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .map-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .map-title i {
+            color: #4299e1;
+        }
+        
+        .traffic-indicators {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+        
+        .traffic-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .traffic-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .traffic-high {
+            background: #fc8181;
+        }
+        
+        .traffic-clear {
+            background: #68d391;
+        }
+        
+        #map {
+            height: calc(100% - 60px);
+        }
+        
+        /* Right Sidebar */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .metrics-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #2d3748;
+        }
+        
+        .card-header i {
+            color: #4299e1;
+        }
+        
+        .metric-item {
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .metric-item:first-of-type {
+            padding-top: 0;
+        }
+        
+        .metric-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .metric-unit {
+            font-size: 14px;
+            font-weight: 400;
+            color: #a0aec0;
+            margin-left: 4px;
+        }
+        
+        /* Stop Sequence */
+        .stops-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stops-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+        }
+        
+        .stops-table-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px;
+            gap: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+        
+        .stops-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .stop-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px;
+            gap: 12px;
+            padding: 12px 8px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+            align-items: center;
+        }
+        
+        .stop-item:hover {
+            background: #f7fafc;
+        }
+        
+        .stop-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4299e1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .stop-location {
+            font-size: 14px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        .stop-time {
+            font-size: 13px;
+            color: #a0aec0;
+            text-align: right;
+        }
+        
+        /* Loading State */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Alert */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .alert-error {
+            background: #fff5f5;
+            color: #c53030;
+            border-left: 4px solid #fc8181;
+        }
+        
+        .alert-success {
+            background: #f0fff4;
+            color: #22543d;
+            border-left: 4px solid #68d391;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #a0aec0;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            color: #cbd5e0;
+        }
+        
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+            color: #a0aec0;
+        }
+        
+        /* Scrollbar */
+        .stops-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .stops-list::-webkit-scrollbar-track {
+            background: #f7fafc;
+            border-radius: 3px;
+        }
+        
+        .stops-list::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+        
+        .stops-list::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Alert Container -->
+    <div id="alert" class="alert"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-route"></i>
+            </div>
+            <div class="logo-text">SmartRoute</div>
+        </div>
+        
+        <div class="form-section">
+            <form id="routeForm">
+                <div class="form-group">
+                    <label class="form-label">Start Location</label>
+                    <input type="text" class="form-input" id="start_location" name="start_location" 
+                           placeholder="🗺️ Anna Nagar, Chennai" value="Anna Nagar, Chennai, India" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">End Location</label>
+                    <input type="text" class="form-input" id="end_location" name="end_location" 
+                           placeholder="🏁 Tambaram, Chennai" value="Tambaram, Chennai, India" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Data Source</label>
+                    <div class="file-upload-box">
+                        <input type="file" id="file" name="file" accept=".csv,.xlsx" required hidden>
+                        <label for="file" class="file-upload-label">
+                            <div class="file-icon">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <div class="file-info">
+                                <div class="file-title" id="fileTitle">Upload CSV/Excel</div>
+                                <div class="file-subtitle" id="fileSubtitle"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="optimize-btn" id="optimizeBtn">
+                    <i class="fas fa-bolt"></i>
+                    Optimize Route
+                </button>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-avatar">D</div>
+            <span>Designed by Deepan</span>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1 class="header-title">Dashboard</h1>
+            <div class="header-actions">
+                <button class="icon-btn">
+                    <i class="far fa-bell"></i>
+                </button>
+                <button class="icon-btn">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+        
+        <div class="content-grid">
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="map-header">
+                    <div class="map-title">
+                        <i class="fas fa-layer-group"></i>
+                        Optimized Route Preview
+                    </div>
+                    <div class="traffic-indicators">
+                        <div class="traffic-indicator">
+                            <span class="traffic-dot traffic-high"></span>
+                            <span>High Traffic</span>
+                        </div>
+                        <div class="traffic-indicator">
+                            <span class="traffic-dot traffic-clear"></span>
+                            <span>Clear</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="map">
+                    <div class="empty-state">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <h3>No Route Yet</h3>
+                        <p>Upload your data and click "Optimize Route" to see the magic!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <!-- Metrics Card -->
+                <div class="metrics-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
+                        Trip Metrics
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Total Distance</div>
+                        <div class="metric-value" id="totalDistance">--<span class="metric-unit">km</span></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Estimated Duration</div>
+                        <div class="metric-value" id="totalDuration">--<span class="metric-unit">min</span></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Total Stops</div>
+                        <div class="metric-value" id="totalStops">--<span class="metric-unit">locations</span></div>
+                    </div>
+                </div>
+                
+                <!-- Stops Card -->
+                <div class="stops-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-ol"></i>
+                        Stop Sequence
+                    </div>
+                    <div class="stops-table-header">
+                        <div>#</div>
+                        <div>LOCATION</div>
+                        <div>EST. TIME</div>
+                    </div>
+                    <div class="stops-list" id="stopsList">
+                        <div class="empty-state">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h3>No Stops Yet</h3>
+                            <p>Your delivery stops will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        let map = null;
+        let routeData = null;
+        
+        // File upload handler
+        document.getElementById('file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileTitle').textContent = file.name;
+                // You can update this after reading the file to show actual count
+                document.getElementById('fileSubtitle').textContent = 'File uploaded successfully';
+            }
+        });
+        
+        // Show alert
+        function showAlert(message, type = 'error') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${message}`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Form submission
+        document.getElementById('routeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('optimizeBtn');
+            const formData = new FormData(e.target);
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Optimizing...';
+            
+            try {
+                const response = await fetch('/api/optimize', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    routeData = data;
+                    displayResults(data);
+                    showAlert('Route optimized successfully!', 'success');
+                } else {
+                    showAlert(data.error || 'Failed to optimize route', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-bolt"></i> Optimize Route';
+            }
+        });
+        
+        // Display results
+        function displayResults(data) {
+            // Update metrics
+            document.getElementById('totalDistance').innerHTML = 
+                `${data.route.distance_km}<span class="metric-unit">km</span>`;
+            document.getElementById('totalDuration').innerHTML = 
+                `${data.route.duration_min}<span class="metric-unit">min</span>`;
+            document.getElementById('totalStops').innerHTML = 
+                `${data.total_stops}<span class="metric-unit">locations</span>`;
+            
+            // Update stops list
+            let stopsHtml = '';
+            stopsHtml += `
+                <div class="stop-item">
+                    <div class="stop-number">S</div>
+                    <div class="stop-location">${data.start.location.substring(0, 20)}${data.start.location.length > 20 ? '...' : ''}</div>
+                    <div class="stop-time">--</div>
+                </div>
+            `;
+            
+            data.stops.forEach((stop, idx) => {
+                const estimatedTime = idx === 0 ? '0 min' : `${Math.round((idx + 1) * (data.route.duration_min / data.stops.length))} min`;
+                stopsHtml += `
+                    <div class="stop-item">
+                        <div class="stop-number">${stop.order}</div>
+                        <div class="stop-location">${stop.location.substring(0, 20)}${stop.location.length > 20 ? '...' : ''}</div>
+                        <div class="stop-time">${estimatedTime}</div>
+                    </div>
+                `;
+            });
+            
+            stopsHtml += `
+                <div class="stop-item">
+                    <div class="stop-number" style="background: #fc8181;">E</div>
+                    <div class="stop-location">${data.end.location.substring(0, 20)}${data.end.location.length > 20 ? '...' : ''}</div>
+                    <div class="stop-time">${data.route.duration_min} min</div>
+                </div>
+            `;
+            
+            document.getElementById('stopsList').innerHTML = stopsHtml;
+            
+            // Initialize map
+            initMap(data);
+        }
+        
+        // Initialize map
+        function initMap(data) {
+            if (map) {
+                map.remove();
+            }
+            
+            const allLats = [data.start.coordinates.lat, ...data.stops.map(s => s.coordinates.lat), data.end.coordinates.lat];
+            const allLngs = [data.start.coordinates.lng, ...data.stops.map(s => s.coordinates.lng), data.end.coordinates.lng];
+            const centerLat = allLats.reduce((a, b) => a + b) / allLats.length;
+            const centerLng = allLngs.reduce((a, b) => a + b) / allLngs.length;
+            
+            map = L.map('map').setView([centerLat, centerLng], 12);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            // Draw route
+            const routeLine = data.route.geometry.map(coord => [coord[1], coord[0]]);
+            L.polyline(routeLine, {
+                color: '#ff8c42',
+                weight: 6,
+                opacity: 0.8
+            }).addTo(map);
+            
+            // Add markers
+            const customIcon = (number, color) => L.divIcon({
+                html: `<div style="background: white; border: 3px solid ${color}; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${number}</div>`,
+                className: '',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+            
+            L.marker([data.start.coordinates.lat, data.start.coordinates.lng], {
+                icon: customIcon('S', '#68d391')
+            }).addTo(map).bindPopup(`<b>START</b><br>${data.start.location}`);
+            
+            data.stops.forEach(stop => {
+                L.marker([stop.coordinates.lat, stop.coordinates.lng], {
+                    icon: customIcon(stop.order, '#4299e1')
+                }).addTo(map).bindPopup(`<b>Stop #${stop.order}</b><br>${stop.location}`);
+            });
+            
+            L.marker([data.end.coordinates.lat, data.end.coordinates.lng], {
+                icon: customIcon('E', '#fc8181')
+            }).addTo(map).bindPopup(`<b>END</b><br>${data.end.location}`);
+            
+            map.fitBounds(L.latLngBounds(routeLine), { padding: [50, 50] });
+        }
+    </script>
+</body>
+</html>
